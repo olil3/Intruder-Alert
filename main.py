@@ -1,3 +1,6 @@
+# Contains code adapted from https://pyimagesearch.com
+# URL: https://www.pyimagesearch.com/2017/06/19/image-difference-with-opencv-and-python/
+
 import imutils
 import json
 import math

@@ -1,3 +1,7 @@
+# File adapted from Murtaza Hassan's tutorials on Object Detection
+# URL: https://www.murtazahassan.com/courses/opencv-projects/
+# Youtube Link: https://www.youtube.com/watch?v=Vg9rrOFmwHo
+
 import cv2
 import os
 base_dir = os.getcwd()
