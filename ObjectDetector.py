@@ -46,7 +46,7 @@ def read_img(img, draw=True, class_list=[], json_config=None):
     # Run the image through the DNN model.
     (class_ids, confidence_values, bbox) = net.detect(img, confThreshold=threshold_value, nmsThreshold=0.1)
 
-    # If the provided class_list array is empty, draw bounding boxes for detected claszses.
+    # If the provided class_list array is empty, draw bounding boxes for detected classes.
     if len(class_list) == 0:
         class_list = class_names
 
