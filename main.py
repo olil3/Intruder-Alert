@@ -57,13 +57,9 @@ def get_coord(capture_obj):
         (x, y, w, h) = cv2.boundingRect(c)
         bounding_rect_details.append((x, y, w, h))
         cv2.rectangle(curr_snapshot, (x, y), (x + w, y + h), (0, 0, 255), 2)
-        # cv2.rectangle(modified_file, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
     # show the output images
     cv2.imshow("Original", curr_snapshot)
-    # cv2.imshow("Modified", modified_file)
-    # cv2.imshow("Diff", diff)
-    # cv2.imshow("Thresh", thresh)
     cv2.waitKey(0)
 
     while True:
@@ -118,7 +114,6 @@ if __name__ == "__main__":
     cap = cv2.VideoCapture(vid_stream)
     cap.set(3, 640)
     cap.set(4, 480)
-    # cap.set(10,70)
     initialize_vars(cap)
 
     classified_region = (curr_json["line_data"]["x_coord_f"], curr_json["line_data"]["y_coord_f"],
