@@ -1,15 +1,18 @@
 import cv2
+import os
+base_dir = os.getcwd()
 
-threshold_value = 0.45  # Threshold to detect object
-
+global class_names
 class_names = []
-classFile = 'coco.names'
+
+classFile = base_dir + '\\inference_files\\coco.names'
 with open(classFile, 'rt') as f:
     class_names = f.read().rstrip('\n').split('\n')
 
-configPath = 'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
-weightsPath = 'frozen_inference_graph.pb'
+configPath = base_dir + '\\inference_files\\ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
+weightsPath = base_dir + '\\inference_files\\frozen_inference_graph.pb'
 
+threshold_value = 0.45  # Threshold to detect object
 net = cv2.dnn_DetectionModel(weightsPath, configPath)
 net.setInputSize(320, 320)
 net.setInputScale(1.0 / 127.5)
@@ -18,7 +21,7 @@ net.setInputSwapRB(True)
 
 
 def read_img(img, draw=True, object_list=[], json_config=None):
-    class_ids, confidence_values, bbox = net.detect(img, confThreshold=threshold_value, nmsThreshold=0.)
+    class_ids, confidence_values, bbox = net.detect(img, confThreshold=threshold_value, nmsThreshold=0.1)
     if len(object_list) == 0:
         object_list = class_names
 
