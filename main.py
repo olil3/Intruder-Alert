@@ -1,17 +1,17 @@
-import json
-import numpy
-import math
-from PIL import Image
-from ObjectDetector import *
 import imutils
+import json
+import math
+import numpy
+from ObjectDetector import *
+from PIL import Image
 from skimage.measure import compare_ssim
+import sys
 
 config_file = 'config.json'
 delta_file_name = 'modify_file.png'
-vid_stream = 0  # 'rtsp://192.168.1.34:8080/h264_pcm.sdp'
 
-global curr_json
 with open(config_file) as json_file:
+    global curr_json
     curr_json = json.loads(json_file.read())
     json_file.close()
 
@@ -58,19 +58,21 @@ def get_coord(capture_obj):
         bounding_rect_details.append((x, y, w, h))
         cv2.rectangle(curr_snapshot, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
-    # show the output images
-    cv2.imshow("Original", curr_snapshot)
-    cv2.waitKey(0)
-
     while True:
         print("Please check the opened window if the bounding rect as been draw correctly around the region of "
               "interest. \n")
-        print("If yes, enter 'Yes'. Else, enter 'No'. ")
+        print("If yes, enter 'Yes'. Else, enter 'No'. \n")
+        print("Please close the window before typing in your option. \n")
+
+        # show the output images
+        cv2.imshow("Original", curr_snapshot)
+        cv2.waitKey(0)
         check_val = input()
+
         if check_val == "Yes":
             break
         elif check_val == "No":
-            print("Restarting procedure for input. ")
+            print("Restarting procedure for input. \n")
             get_coord(capture_obj)
             break
 
@@ -78,10 +80,6 @@ def get_coord(capture_obj):
 
 
 def initialize_vars(capture_obj):
-    if curr_json is None:
-        print("Error: config.json missing. Please check the file location. \n")
-        exit(0)
-
     if curr_json["line_data"]["is_initialized"] == "No":
         print("Coords not initialized. Opening script to initialize coordinates. \n")
         (x, y, w, h) = get_coord(capture_obj)
@@ -110,22 +108,62 @@ def is_near(box_1, box_2, dist_threshold=0):
         return False
 
 
-if __name__ == "__main__":
-    cap = cv2.VideoCapture(vid_stream)
-    cap.set(3, 640)
-    cap.set(4, 480)
-    initialize_vars(cap)
+def check_config():
+    if curr_json is None:
+        print("Error: config.json missing. Please check the file location. \n")
+        exit(0)
 
-    classified_region = (curr_json["line_data"]["x_coord_f"], curr_json["line_data"]["y_coord_f"],
-                         curr_json["line_data"]["x_coord_l"], curr_json["line_data"]["y_coord_l"])
+    if curr_json["video_stream_link"] is None:
+        print("Error: Field 'video_stream_link' is missing. Please add the field.\n")
+        exit(0)
+
+
+def check_args(argv):
+    argv_length = len(argv)
+    if argv_length <= 1:
+        if argv_length == 1:
+            if argv[0] == "--reset":
+                curr_json["line_data"]["is_initialized"] = "No"
+            else:
+                print("Illegal arguments provided. Usage: main.py [--reset]\n")
+                exit(0)
+    else:
+        print("Illegal arguments provided. Usage: main.py [--reset]\n")
+        exit(0)
+
+
+def main(argv):
+    check_args(argv)
+    check_config()
+
+    cap = cv2.VideoCapture(curr_json["video_stream_link"])
+    cap.set(3, curr_json["resolution_width"])
+    cap.set(4, curr_json["resolution_height"])
+
+    initialize_vars(cap)
+    classified_region = (curr_json["line_data"]["x_coord_f"],
+                         curr_json["line_data"]["y_coord_f"],
+                         curr_json["line_data"]["x_coord_l"],
+                         curr_json["line_data"]["y_coord_l"])
 
     while True:
         success, img = cap.read()
         result, object_info = read_img(img, True, ['person'], curr_json)
         for obj in object_info:
-            if is_near(classified_region, obj[0], 200):
-                cv2.putText(result, "PERSON IS VIOLATING SPACE", (int(cap.get(3) * 0.2), 50), cv2.FONT_HERSHEY_COMPLEX,
-                            1, (0, 0, 255), 1)
+            if is_near(classified_region, obj[0], curr_json["distance_tolerance"]):
+                cv2.putText(result,
+                            curr_json["line_data"]["error_message"],
+                            (int(cap.get(3) * 0.2), 50),
+                            cv2.FONT_HERSHEY_COMPLEX,
+                            curr_json["line_data"]["font_scale"],
+                            (curr_json["line_data"]["color"]["B"],
+                             curr_json["line_data"]["color"]["G"],
+                             curr_json["line_data"]["color"]["R"]),
+                            curr_json["line_data"]["line_thickness"])
 
         cv2.imshow("Output", result)
         cv2.waitKey(1)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
