@@ -14,6 +14,10 @@ import sys
 config_file = base_dir + '\\config.json'
 delta_file_name = base_dir + '\\modify_file.png'
 
+with open(config_file) as json_file:
+        global curr_json
+        curr_json = json.loads(json_file.read())
+        json_file.close()
 
 # This function is used to obtain the bounding box for the area of interest, i.e.
 # the area which will be marked as classified.
@@ -77,6 +81,14 @@ def get_coord(capture_obj):
         bounding_rect_details.append((x, y, w, h))
         cv2.rectangle(curr_snapshot, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
+    global idx_c
+    idx_c = 0
+    for i in range(0, len(bounding_rect_details)):
+        tuple_c = bounding_rect_details[i]
+        tuple_p = bounding_rect_details[idx_c]
+        if (tuple_p[2] < tuple_c[2]) or (tuple_p[3] < tuple_c[3]):
+            idx_c = i
+        
     # Ask the user if the bounding boxes have been generated effectively.
     while True:
         print("Please check the opened window if the bounding rect as been draw correctly around the region of "
@@ -97,17 +109,12 @@ def get_coord(capture_obj):
             break
 
     # Return the bounding box array.
-    return bounding_rect_details[0]
+    return bounding_rect_details[idx_c]
 
 
 # This function initializes the json object and calls get_coord if needed.
 # params: capture_obj - OpenCV's VideoCapture Object.
 def initialize_vars(capture_obj):
-    with open(config_file) as json_file:
-        global curr_json
-        curr_json = json.loads(json_file.read())
-        json_file.close()
-
     if curr_json["line_data"]["is_initialized"] == "No":
         print("Coords not initialized. Opening script to initialize coordinates. \n")
         (x, y, w, h) = get_coord(capture_obj)
