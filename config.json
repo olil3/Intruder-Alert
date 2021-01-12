@@ -1,0 +1,21 @@
+{
+	"video_stream_link": 0,
+	"distance_tolerance": 200,
+	"resolution_width": 640,
+	"resolution_height": 480,
+	"line_data": {
+		"color": {
+			"B": 0,
+			"G": 0,
+			"R": 255
+			},
+		"line_thickness": 1,
+		"font_scale": 1,
+		"error_message": "PERSON IS VIOLATING SPACE",
+		"is_initialized": "No",
+		"x_coord_f": -1,
+		"y_coord_f": -1,
+		"x_coord_l": -1,
+		"y_coord_l": -1
+		}
+}
